@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#073B7A" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="9Grid" />
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="apple-touch-icon" href="./icon-180.png" />
+  <title>Project 9Grid</title>
+  <style>
+    :root{
+      --navy:#073B7A;--blue:#0F5AA7;--sky:#2CA8F2;--bg:#F4F7FB;--card:#fff;
+      --text:#172033;--muted:#6D7789;--line:#E4E9F1;--good:#1C9A68;--warn:#E59A1A;--bad:#D44C4C;
+      --shadow:0 10px 28px rgba(15,47,90,.09);--r:18px;
+    }
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Microsoft JhengHei",sans-serif}
+    button,input,select,textarea{font:inherit}
+    .app{max-width:520px;margin:auto;min-height:100vh;padding-bottom:92px}
+    .top{position:sticky;top:0;z-index:20;background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff;padding:18px 18px 16px;border-radius:0 0 26px 26px}
+    .top small{opacity:.82;letter-spacing:.08em}.top h1{margin:4px 0 0;font-size:24px}.top p{margin:5px 0 0;font-size:13px;opacity:.88}
+    .content{padding:16px}.screen{display:none}.screen.active{display:block}
+    .card{background:var(--card);border-radius:var(--r);padding:16px;margin-bottom:14px;box-shadow:var(--shadow)}
+    .title{font-size:18px;font-weight:900;margin:6px 0 12px}.sub{font-size:13px;color:var(--muted)}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.metric{background:#F8FAFD;border:1px solid var(--line);border-radius:16px;padding:14px}
+    .metric b{display:block;font-size:28px;color:var(--navy)}.metric span{font-size:13px;color:var(--muted)}
+    .btn{border:0;border-radius:14px;padding:13px 15px;font-weight:900;cursor:pointer}.btn.primary{background:var(--navy);color:#fff;width:100%}.btn.secondary{background:#EAF4FF;color:var(--navy)}.btn.ghost{background:#fff;color:var(--navy);border:1px solid var(--line);width:100%}.btn.danger{background:#FFF0F0;color:var(--bad);width:100%}
+    .row{display:flex;gap:10px;align-items:center}.row>*{flex:1}
+    .list{background:#fff;border-radius:var(--r);padding:0 16px;box-shadow:var(--shadow)}.item{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid var(--line);cursor:pointer}.item:last-child{border-bottom:0}.name{font-weight:900}.meta{font-size:12px;color:var(--muted);margin-top:4px}.badge{font-size:12px;font-weight:800;padding:5px 9px;border-radius:999px;background:#EAF3FF;color:var(--navy);white-space:nowrap}
+    .grid9{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.cell{min-height:110px;border:1px solid var(--line);background:#fff;border-radius:16px;padding:10px;text-align:left;position:relative}.cell.center{background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff;border:0}.cell b{display:block}.cell strong{font-size:27px;display:block;margin-top:10px}.cell small{position:absolute;bottom:9px;left:10px;color:var(--muted);font-size:11px}.cell.center small{color:#dcecff}
+    label{display:block;font-size:13px;font-weight:800;margin:12px 0 6px}input,select,textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff;color:var(--text)}textarea{min-height:88px}
+    .nav{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:min(520px,100%);background:#fff;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);padding:7px 8px calc(8px + env(safe-area-inset-bottom));z-index:30}.nav button{border:0;background:transparent;color:var(--muted);padding:7px 2px;font-size:11px}.nav button.active{color:var(--navy);font-weight:900}
+    .modal{position:fixed;inset:0;background:rgba(13,25,45,.45);z-index:100;display:none;align-items:flex-end;justify-content:center}.modal.show{display:flex}.sheet{width:min(520px,100%);max-height:92vh;overflow:auto;background:#fff;border-radius:26px 26px 0 0;padding:18px}.close{float:right;border:0;background:#EEF2F7;width:34px;height:34px;border-radius:50%;font-size:20px}
+    .task{border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:10px}.task.overdue{border-color:#F3C4C4;background:#FFF8F8}
+    .progress{height:9px;background:#E8EDF4;border-radius:99px;overflow:hidden}.progress>div{height:100%;background:var(--sky)}
+    .pillbar{display:flex;gap:8px;overflow:auto;padding-bottom:4px}.pill{border:1px solid var(--line);background:#fff;padding:8px 11px;border-radius:999px;white-space:nowrap}.pill.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+    .empty{text-align:center;color:var(--muted);padding:26px 8px}.section-head{display:flex;align-items:center;justify-content:space-between;margin:6px 0 12px}.section-head h2{font-size:18px;margin:0}
+    .toast{position:fixed;left:50%;bottom:100px;transform:translateX(-50%);background:#14213A;color:#fff;padding:10px 14px;border-radius:12px;font-size:13px;opacity:0;pointer-events:none;transition:.25s;z-index:200}.toast.show{opacity:1}
+    .hidden{display:none!important}.lock{position:fixed;inset:0;background:linear-gradient(150deg,var(--navy),var(--blue));z-index:300;display:flex;align-items:center;justify-content:center;padding:24px}.lock-card{width:min(420px,100%);background:#fff;border-radius:24px;padding:24px;text-align:center}.logo9{width:82px;height:82px;margin:auto;display:grid;grid-template-columns:repeat(3,1fr);gap:5px}.logo9 i{display:block;background:#E9F4FF;border-radius:8px}.logo9 i:nth-child(5){background:var(--sky)}
+  </style>
+</head>
+<body>
+<div id="lock" class="lock">
+  <div class="lock-card">
+    <div class="logo9"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <h2>Project 9Grid</h2>
+    <p class="sub">保險顧問智慧客戶經營系統</p>
+    <div id="setupPin">
+      <label style="text-align:left">設定 4 位數密碼</label>
+      <input id="pin1" inputmode="numeric" maxlength="4" placeholder="例如 1234">
+      <button class="btn primary" style="margin-top:14px" onclick="setPin()">建立並進入</button>
+    </div>
+    <div id="loginPin" class="hidden">
+      <label style="text-align:left">輸入密碼</label>
+      <input id="pin2" inputmode="numeric" maxlength="4" placeholder="4 位數密碼">
+      <button class="btn primary" style="margin-top:14px" onclick="login()">登入</button>
+    </div>
+    <p class="sub" style="margin-top:14px">資料目前儲存在這支手機；請定期使用「匯出備份」。</p>
+  </div>
+</div>
+
+<div class="app">
+  <header class="top">
+    <small>PROJECT 9GRID</small>
+    <h1 id="headTitle">首頁戰情室</h1>
+    <p id="headSub">成交客戶 → 轉介紹 → 新成交</p>
+  </header>
+
+  <main class="content">
+    <section id="home" class="screen active">
+      <div class="section-head"><h2>今日重點</h2><span class="badge" id="todayLabel"></span></div>
+      <div class="card" id="todayTasks"></div>
+      <div class="title">整體概況</div>
+      <div class="grid2">
+        <div class="metric"><b id="mCustomers">0</b><span>成交客戶</span></div>
+        <div class="metric"><b id="mPeople">0</b><span>總人脈</span></div>
+        <div class="metric"><b id="mFollow">0</b><span>待追蹤</span></div>
+        <div class="metric"><b id="mDeals">0</b><span>人脈成交</span></div>
+      </div>
+      <div class="card" style="margin-top:14px">
+        <div class="row"><div><b>九宮格平均完成度</b><div class="sub">八類至少各有一位人脈</div></div><div style="text-align:right;font-size:24px;font-weight:900" id="completionText">0%</div></div>
+        <div class="progress" style="margin-top:12px"><div id="completionBar"></div></div>
+      </div>
+      <button class="btn primary" onclick="openCustomer()">＋ 新增成交客戶</button>
+    </section>
+
+    <section id="customers" class="screen">
+      <div class="row" style="margin-bottom:12px"><input id="customerSearch" placeholder="搜尋姓名、職業或公司" oninput="renderCustomers()"><button class="btn secondary" style="max-width:100px" onclick="openCustomer()">＋ 新增</button></div>
+      <div id="customerList" class="list"></div>
+    </section>
+
+    <section id="grid" class="screen">
+      <div id="gridEmpty" class="card empty">請先新增成交客戶。</div>
+      <div id="gridWrap" class="hidden">
+        <div class="card">
+          <label style="margin-top:0">目前中心客戶</label>
+          <select id="gridCustomerSelect" onchange="switchCustomer(this.value)"></select>
+        </div>
+        <div id="grid9" class="grid9"></div>
+        <button class="btn primary" style="margin-top:14px" onclick="openPerson()">＋ 新增九宮格人脈</button>
+      </div>
+    </section>
+
+    <section id="tasks" class="screen">
+      <div class="pillbar">
+        <button class="pill active" onclick="setTaskFilter('all',this)">全部</button>
+        <button class="pill" onclick="setTaskFilter('overdue',this)">逾期</button>
+        <button class="pill" onclick="setTaskFilter('today',this)">今天</button>
+        <button class="pill" onclick="setTaskFilter('week',this)">7天內</button>
+      </div>
+      <div class="card" id="taskList" style="margin-top:12px"></div>
+    </section>
+
+    <section id="stats" class="screen">
+      <div class="card"><div class="title" style="margin-top:0">開發漏斗</div><div id="funnel"></div></div>
+      <div class="card"><div class="title" style="margin-top:0">人脈來源</div><div id="sourceStats"></div></div>
+      <div class="card">
+        <div class="title" style="margin-top:0">資料管理</div>
+        <button class="btn ghost" onclick="exportData()">匯出備份檔</button>
+        <label>匯入備份檔</label><input id="importFile" type="file" accept=".json" onchange="importData(event)">
+        <button class="btn danger" style="margin-top:12px" onclick="resetAll()">清除所有資料</button>
+      </div>
+    </section>
+  </main>
+
+  <nav class="nav">
+    <button class="active" data-screen="home">首頁</button>
+    <button data-screen="customers">客戶</button>
+    <button data-screen="grid">九宮格</button>
+    <button data-screen="tasks">待辦</button>
+    <button data-screen="stats">統計</button>
+  </nav>
+</div>
+
+<div id="customerModal" class="modal"><div class="sheet">
+  <button class="close" onclick="closeM('customerModal')">×</button><h3 id="customerModalTitle">新增成交客戶</h3>
+  <input id="cId" type="hidden">
+  <label>姓名 *</label><input id="cName">
+  <label>手機</label><input id="cPhone" inputmode="tel">
+  <label>LINE</label><input id="cLine">
+  <div class="row"><div><label>生日</label><input id="cBirthday" type="date"></div><div><label>成交日期 *</label><input id="cDate" type="date"></div></div>
+  <label>職業</label><input id="cJob">
+  <label>公司</label><input id="cCompany">
+  <label>家庭狀況</label><select id="cFamily"><option>未填寫</option><option>未婚</option><option>已婚</option><option>已婚有子女</option></select>
+  <label>年繳保費</label><input id="cPremium" inputmode="numeric" placeholder="例如 60000">
+  <label>成交類型</label><select id="cType"><option>壽險</option><option>醫療</option><option>重大傷病</option><option>長照</option><option>投資型</option><option>其他</option></select>
+  <label>介紹來源</label><input id="cSource">
+  <label>備註</label><textarea id="cNote"></textarea>
+  <button class="btn primary" style="margin-top:15px" onclick="saveCustomer()">儲存客戶</button>
+</div></div>
+
+<div id="personModal" class="modal"><div class="sheet">
+  <button class="close" onclick="closeM('personModal')">×</button><h3 id="personModalTitle">新增人脈</h3>
+  <input id="pId" type="hidden">
+  <label>所屬成交客戶</label><select id="pCustomer"></select>
+  <label>姓名 *</label><input id="pName">
+  <label>分類</label><select id="pCategory"></select>
+  <label>關係說明</label><input id="pRelation" placeholder="例如：大學同學、前主管">
+  <label>手機</label><input id="pPhone" inputmode="tel">
+  <label>LINE</label><input id="pLine">
+  <label>職業</label><input id="pJob">
+  <label>公司</label><input id="pCompany">
+  <label>人生事件</label><select id="pEvent"><option>無</option><option>結婚</option><option>買房</option><option>生小孩</option><option>換工作</option><option>創業</option><option>準備退休</option></select>
+  <label>目前進度</label><select id="pStatus"></select>
+  <label>下次追蹤日期</label><input id="pFollow" type="date">
+  <label>備註</label><textarea id="pNote"></textarea>
+  <button class="btn primary" style="margin-top:15px" onclick="savePerson()">儲存人脈</button>
+</div></div>
+
+<div id="detailModal" class="modal"><div class="sheet">
+  <button class="close" onclick="closeM('detailModal')">×</button><div id="detail"></div>
+</div></div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+const categories=['親戚','同學','鄰居','當兵同袍','前同事','家人','另一半','社團'];
+const statuses=['尚未提及','客戶願意介紹','已取得聯絡方式','已加入LINE','已完成聊天','已約訪','完成需求分析','已提案','已成交','暫緩','拒絕','無法聯絡'];
+let taskFilter='all';
+let state=JSON.parse(localStorage.getItem('p9data')||'null')||{customers:[],people:[],selectedCustomerId:''};
+
+const $=id=>document.getElementById(id);
+const uid=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const isoToday=()=>new Date().toISOString().slice(0,10);
+const fmt=d=>d?d.replaceAll('-','/'):'未設定';
+const money=n=>Number(n||0).toLocaleString('zh-TW');
+
+function toast(t){$('toast').textContent=t;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),1800)}
+function persist(){localStorage.setItem('p9data',JSON.stringify(state));renderAll()}
+function openM(id){$(id).classList.add('show')} function closeM(id){$(id).classList.remove('show')}
+window.addEventListener('click',e=>{if(e.target.classList.contains('modal'))e.target.classList.remove('show')});
+
+function setupLock(){
+  const pin=localStorage.getItem('p9pin');
+  $('setupPin').classList.toggle('hidden',!!pin);$('loginPin').classList.toggle('hidden',!pin);
+}
+function setPin(){const v=$('pin1').value.trim();if(!/^\d{4}$/.test(v))return toast('請輸入 4 位數字');localStorage.setItem('p9pin',v);$('lock').classList.add('hidden');}
+function login(){if($('pin2').value===localStorage.getItem('p9pin')){$('lock').classList.add('hidden')}else toast('密碼錯誤')}
+setupLock();
+
+document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>navTo(b.dataset.screen));
+function navTo(id){
+  document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));$(id).classList.add('active');
+  document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.screen===id));
+  const t={home:['首頁戰情室','成交客戶 → 轉介紹 → 新成交'],customers:['成交客戶','管理客戶與九宮格中心'],grid:['人脈九宮格','八大關係來源'],tasks:['待辦追蹤','今天該聯絡誰'],stats:['統計與備份','掌握開發進度']};
+  $('headTitle').textContent=t[id][0];$('headSub').textContent=t[id][1];
+}
+
+function renderAll(){renderHome();renderCustomers();renderGrid();renderTasks();renderStats();fillSelects()}
+function renderHome(){
+  const today=isoToday();$('todayLabel').textContent=fmt(today);
+  $('mCustomers').textContent=state.customers.length;$('mPeople').textContent=state.people.length;
+  $('mFollow').textContent=state.people.filter(p=>p.follow&&p.status!=='已成交').length;
+  $('mDeals').textContent=state.people.filter(p=>p.status==='已成交').length;
+  let pct=0;if(state.customers.length){pct=Math.round(state.customers.reduce((s,c)=>s+new Set(state.people.filter(p=>p.customerId===c.id).map(p=>p.category)).size/8*100,0)/state.customers.length)}
+  $('completionText').textContent=pct+'%';$('completionBar').style.width=pct+'%';
+  const tasks=state.people.filter(p=>p.follow&&p.status!=='已成交').sort((a,b)=>a.follow.localeCompare(b.follow)).slice(0,4);
+  $('todayTasks').innerHTML=tasks.length?tasks.map(p=>`<div class="task ${p.follow<today?'overdue':''}" onclick="openPersonDetail('${p.id}')"><b>${p.name}</b>｜${p.status}<div class="meta">${fmt(p.follow)}・${p.category}</div></div>`).join(''):'<div class="empty">目前沒有待追蹤事項</div>';
+}
+function renderCustomers(){
+  const q=($('customerSearch').value||'').toLowerCase();
+  const arr=state.customers.filter(c=>(c.name+c.job+c.company).toLowerCase().includes(q));
+  $('customerList').innerHTML=arr.length?arr.map(c=>{const ps=state.people.filter(p=>p.customerId===c.id);return `<div class="item" onclick="openCustomerDetail('${c.id}')"><div><div class="name">${c.name}</div><div class="meta">${c.job||'未填職業'}${c.company?'・'+c.company:''}</div><div class="meta">九宮格 ${ps.length} 人・年繳保費 NT$${money(c.premium)}</div></div><span class="badge">${c.type}</span></div>`}).join(''):'<div class="empty">尚無成交客戶</div>';
+}
+function renderGrid(){
+  if(!state.customers.length){$('gridEmpty').classList.remove('hidden');$('gridWrap').classList.add('hidden');return}
+  $('gridEmpty').classList.add('hidden');$('gridWrap').classList.remove('hidden');
+  if(!state.customers.some(c=>c.id===state.selectedCustomerId))state.selectedCustomerId=state.customers[0].id;
+  const c=state.customers.find(c=>c.id===state.selectedCustomerId);
+  $('gridCustomerSelect').innerHTML=state.customers.map(x=>`<option value="${x.id}" ${x.id===c.id?'selected':''}>${x.name}</option>`).join('');
+  const cells=[categories[0],categories[1],categories[2],categories[3],'CENTER',categories[4],categories[5],categories[6],categories[7]];
+  $('grid9').innerHTML=cells.map(cat=>{
+    if(cat==='CENTER'){const n=state.people.filter(p=>p.customerId===c.id).length;return `<button class="cell center"><b>${c.name}</b><strong>${n}</strong><small>成交客戶・總人脈</small></button>`}
+    const ps=state.people.filter(p=>p.customerId===c.id&&p.category===cat);const f=ps.filter(p=>p.follow&&p.status!=='已成交').length;
+    return `<button class="cell" onclick="openCategory('${cat}')"><b>${cat}</b><strong>${ps.length}</strong><small>${f?`待追蹤 ${f} 人`:'點擊查看'}</small></button>`}).join('');
+}
+function renderTasks(){
+  const today=isoToday();const week=new Date();week.setDate(week.getDate()+7);const weekIso=week.toISOString().slice(0,10);
+  let arr=state.people.filter(p=>p.follow&&p.status!=='已成交');
+  if(taskFilter==='overdue')arr=arr.filter(p=>p.follow<today);
+  if(taskFilter==='today')arr=arr.filter(p=>p.follow===today);
+  if(taskFilter==='week')arr=arr.filter(p=>p.follow>=today&&p.follow<=weekIso);
+  arr.sort((a,b)=>a.follow.localeCompare(b.follow));
+  $('taskList').innerHTML=arr.length?arr.map(p=>{const c=state.customers.find(c=>c.id===p.customerId);return `<div class="item" onclick="openPersonDetail('${p.id}')"><div><div class="name">${p.name}</div><div class="meta">${fmt(p.follow)}・${p.status}</div><div class="meta">來源：${c?.name||''}・${p.category}</div></div><span class="badge">${p.event}</span></div>`}).join(''):'<div class="empty">此篩選沒有待辦</div>';
+}
+function setTaskFilter(f,el){taskFilter=f;document.querySelectorAll('.pill').forEach(x=>x.classList.remove('active'));el.classList.add('active');renderTasks()}
+function renderStats(){
+  $('funnel').innerHTML=statuses.slice(0,9).map(s=>`<div class="item"><span>${s}</span><b>${state.people.filter(p=>p.status===s).length}</b></div>`).join('');
+  $('sourceStats').innerHTML=categories.map(s=>`<div class="item"><span>${s}</span><b>${state.people.filter(p=>p.category===s).length} 人</b></div>`).join('');
+}
+function fillSelects(){
+  $('pCategory').innerHTML=categories.map(x=>`<option>${x}</option>`).join('');
+  $('pStatus').innerHTML=statuses.map(x=>`<option>${x}</option>`).join('');
+  $('pCustomer').innerHTML=state.customers.map(x=>`<option value="${x.id}">${x.name}</option>`).join('');
+}
+
+function switchCustomer(id){state.selectedCustomerId=id;persist()}
+function clearCustomerForm(){['cId','cName','cPhone','cLine','cBirthday','cJob','cCompany','cPremium','cSource','cNote'].forEach(id=>$(id).value='');$('cDate').value=isoToday()}
+function openCustomer(id=''){clearCustomerForm();$('customerModalTitle').textContent=id?'編輯成交客戶':'新增成交客戶';if(id){const c=state.customers.find(x=>x.id===id);Object.entries({cId:c.id,cName:c.name,cPhone:c.phone,cLine:c.line,cBirthday:c.birthday,cDate:c.date,cJob:c.job,cCompany:c.company,cFamily:c.family,cPremium:c.premium,cType:c.type,cSource:c.source,cNote:c.note}).forEach(([k,v])=>$(k).value=v||'')}openM('customerModal')}
+function saveCustomer(){
+  if(!$('cName').value.trim()||!$('cDate').value)return toast('請填姓名與成交日期');
+  const data={id:$('cId').value||uid('c'),name:$('cName').value.trim(),phone:$('cPhone').value,line:$('cLine').value,birthday:$('cBirthday').value,date:$('cDate').value,job:$('cJob').value,company:$('cCompany').value,family:$('cFamily').value,premium:$('cPremium').value,type:$('cType').value,source:$('cSource').value,note:$('cNote').value};
+  const i=state.customers.findIndex(x=>x.id===data.id);if(i>=0)state.customers[i]=data;else state.customers.unshift(data);
+  state.selectedCustomerId=data.id;closeM('customerModal');persist();toast('客戶已儲存');
+}
+function openCustomerDetail(id){
+  const c=state.customers.find(x=>x.id===id),ps=state.people.filter(p=>p.customerId===id);
+  $('detail').innerHTML=`<h3>${c.name}</h3><p class="sub">${c.job||'未填職業'}${c.company?'・'+c.company:''}</p>
+  <div class="card" style="box-shadow:none;border:1px solid var(--line)"><b>客戶戰情室</b>
+  <div class="grid2" style="margin-top:12px"><div class="metric"><b>${ps.length}</b><span>介紹人脈</span></div><div class="metric"><b>${ps.filter(p=>p.status==='已成交').length}</b><span>人脈成交</span></div><div class="metric"><b>NT$${money(c.premium)}</b><span>年繳保費</span></div><div class="metric"><b>${fmt(c.birthday)}</b><span>生日</span></div></div></div>
+  <button class="btn primary" onclick="closeM('detailModal');state.selectedCustomerId='${c.id}';persist();navTo('grid')">查看九宮格</button>
+  <button class="btn ghost" style="margin-top:10px" onclick="closeM('detailModal');openCustomer('${c.id}')">編輯客戶</button>
+  <button class="btn danger" style="margin-top:10px" onclick="deleteCustomer('${c.id}')">刪除客戶</button>`;
+  openM('detailModal');
+}
+function deleteCustomer(id){if(!confirm('會一併刪除此客戶底下的人脈，確定嗎？'))return;state.customers=state.customers.filter(x=>x.id!==id);state.people=state.people.filter(x=>x.customerId!==id);closeM('detailModal');persist()}
+
+function clearPersonForm(){['pId','pName','pRelation','pPhone','pLine','pJob','pCompany','pFollow','pNote'].forEach(id=>$(id).value='')}
+function openPerson(cat='',id=''){if(!state.customers.length)return toast('請先新增成交客戶');clearPersonForm();fillSelects();$('personModalTitle').textContent=id?'編輯人脈':'新增人脈';$('pCustomer').value=state.selectedCustomerId||state.customers[0].id;if(cat)$('pCategory').value=cat;
+  if(id){const p=state.people.find(x=>x.id===id);Object.entries({pId:p.id,pCustomer:p.customerId,pName:p.name,pCategory:p.category,pRelation:p.relation,pPhone:p.phone,pLine:p.line,pJob:p.job,pCompany:p.company,pEvent:p.event,pStatus:p.status,pFollow:p.follow,pNote:p.note}).forEach(([k,v])=>$(k).value=v||'')}
+  openM('personModal');
+}
+function savePerson(){
+  if(!$('pName').value.trim())return toast('請填姓名');
+  const data={id:$('pId').value||uid('p'),customerId:$('pCustomer').value,name:$('pName').value.trim(),category:$('pCategory').value,relation:$('pRelation').value,phone:$('pPhone').value,line:$('pLine').value,job:$('pJob').value,company:$('pCompany').value,event:$('pEvent').value,status:$('pStatus').value,follow:$('pFollow').value,note:$('pNote').value};
+  const i=state.people.findIndex(x=>x.id===data.id);if(i>=0)state.people[i]=data;else state.people.push(data);
+  if(data.status==='已成交'&&!state.customers.some(c=>c.name===data.name)&&confirm('此人脈已成交，是否建立為新的成交客戶與九宮格？')){const c={id:uid('c'),name:data.name,phone:data.phone,line:data.line,birthday:'',date:isoToday(),job:data.job,company:data.company,family:'未填寫',premium:'',type:'其他',source:state.customers.find(x=>x.id===data.customerId)?.name||'',note:'由九宮格人脈轉換'};state.customers.unshift(c);state.selectedCustomerId=c.id}
+  closeM('personModal');persist();toast('人脈已儲存');
+}
+function openCategory(cat){
+  const c=state.customers.find(c=>c.id===state.selectedCustomerId),ps=state.people.filter(p=>p.customerId===c.id&&p.category===cat);
+  $('detail').innerHTML=`<h3>${c.name}・${cat}</h3>${ps.length?ps.map(p=>`<div class="item" onclick="openPersonDetail('${p.id}')"><div><div class="name">${p.name}</div><div class="meta">${p.job||'未填職業'}・${p.status}</div></div><span class="badge">${p.event}</span></div>`).join(''):'<div class="empty">尚無人脈</div>'}<button class="btn primary" style="margin-top:12px" onclick="closeM('detailModal');openPerson('${cat}')">＋ 新增${cat}人脈</button>`;
+  openM('detailModal');
+}
+function openPersonDetail(id){
+  const p=state.people.find(x=>x.id===id),c=state.customers.find(x=>x.id===p.customerId);
+  $('detail').innerHTML=`<h3>${p.name}</h3><p class="sub">來源：${c?.name||''}・${p.category}${p.relation?'・'+p.relation:''}</p>
+  <div class="card" style="box-shadow:none;border:1px solid var(--line)"><div class="item"><span>目前進度</span><b>${p.status}</b></div><div class="item"><span>下次追蹤</span><b>${fmt(p.follow)}</b></div><div class="item"><span>人生事件</span><b>${p.event}</b></div><div class="item"><span>電話</span><b>${p.phone||'未填'}</b></div><div class="item"><span>LINE</span><b>${p.line||'未填'}</b></div></div>
+  <button class="btn primary" onclick="closeM('detailModal');openPerson('','${p.id}')">編輯人脈</button><button class="btn danger" style="margin-top:10px" onclick="deletePerson('${p.id}')">刪除此人脈</button>`;
+  openM('detailModal');
+}
+function deletePerson(id){if(!confirm('確定刪除此人脈？'))return;state.people=state.people.filter(x=>x.id!==id);closeM('detailModal');persist()}
+
+function exportData(){
+  const blob=new Blob([JSON.stringify({version:1,exportedAt:new Date().toISOString(),data:state},null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='project9grid-backup-'+isoToday()+'.json';a.click();URL.revokeObjectURL(a.href);
+}
+function importData(e){
+  const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const x=JSON.parse(r.result);state=x.data||x;if(!state.customers||!state.people)throw 0;persist();toast('備份已匯入')}catch{toast('檔案格式不正確')}};r.readAsText(f);
+}
+function resetAll(){if(!confirm('確定清除所有客戶與人脈資料？'))return;state={customers:[],people:[],selectedCustomerId:''};persist();toast('資料已清除')}
+
+renderAll();
+if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js'));
+</script>
+</body>
+</html>
