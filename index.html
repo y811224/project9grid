@@ -22,7 +22,7 @@
     .app{max-width:520px;margin:auto;min-height:100vh;padding-bottom:92px}
     .top{position:sticky;top:0;z-index:20;background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff;padding:18px 18px 16px;border-radius:0 0 26px 26px}
     .top small{opacity:.82;letter-spacing:.08em}.top h1{margin:4px 0 0;font-size:24px}.top p{margin:5px 0 0;font-size:13px;opacity:.88}
-    .content{padding:16px}.screen{display:none}.screen.active{display:block}
+    .content{padding:16px;min-height:calc(100vh - 170px)}.screen{display:none}.screen.active{display:block;min-height:1px;contain:layout paint}
     .card{background:var(--card);border-radius:var(--r);padding:16px;margin-bottom:14px;box-shadow:var(--shadow)}
     .title{font-size:18px;font-weight:900;margin:6px 0 12px}.sub{font-size:13px;color:var(--muted)}
     .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.metric{background:#F8FAFD;border:1px solid var(--line);border-radius:16px;padding:14px}
@@ -218,9 +218,13 @@ function openM(id){
 function closeM(id){
   $(id).classList.remove('show');
   if(!document.querySelector('.modal.show')){
+    const restoreY=pageScrollY;
     document.body.classList.remove('modal-open');
     document.body.style.top='';
-    window.scrollTo(0,pageScrollY);
+    requestAnimationFrame(()=>{
+      window.scrollTo({top:restoreY,left:0,behavior:'auto'});
+      requestAnimationFrame(()=>window.dispatchEvent(new Event('resize')));
+    });
   }
 }
 window.addEventListener('click',e=>{if(e.target.classList.contains('modal'))closeM(e.target.id)});
@@ -239,6 +243,9 @@ function navTo(id){
   document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.screen===id));
   const t={home:['首頁戰情室','成交客戶 → 轉介紹 → 新成交'],customers:['成交客戶','管理客戶與九宮格中心'],grid:['人脈九宮格','八大關係來源'],tasks:['待辦追蹤','今天該聯絡誰'],stats:['統計與備份','掌握開發進度']};
   $('headTitle').textContent=t[id][0];$('headSub').textContent=t[id][1];
+  document.body.style.top='';
+  document.body.classList.remove('modal-open');
+  requestAnimationFrame(()=>window.scrollTo({top:0,left:0,behavior:'auto'}));
 }
 
 function renderAll(){renderHome();renderCustomers();renderGrid();renderTasks();renderStats();fillSelects()}
@@ -345,6 +352,11 @@ function importData(e){
 function resetAll(){if(!confirm('確定清除所有客戶與人脈資料？'))return;state={customers:[],people:[],logs:[],selectedCustomerId:''};persist();toast('資料已清除')}
 
 renderAll();
+window.addEventListener('pageshow',()=>{
+  document.body.classList.remove('modal-open');
+  document.body.style.top='';
+  requestAnimationFrame(()=>window.dispatchEvent(new Event('resize')));
+});
 if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js'));
 </script>
 </body>
