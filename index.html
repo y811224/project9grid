@@ -38,7 +38,7 @@
     .progress{height:9px;background:#E8EDF4;border-radius:99px;overflow:hidden}.progress>div{height:100%;background:var(--sky)}
     .pillbar{display:flex;gap:8px;overflow:auto;padding-bottom:4px}.pill{border:1px solid var(--line);background:#fff;padding:8px 11px;border-radius:999px;white-space:nowrap}.pill.active{background:var(--navy);color:#fff;border-color:var(--navy)}
     .empty{text-align:center;color:var(--muted);padding:26px 8px}.section-head{display:flex;align-items:center;justify-content:space-between;margin:6px 0 12px}.section-head h2{font-size:18px;margin:0}
-    .toast{position:fixed;left:50%;bottom:100px;transform:translateX(-50%);background:#14213A;color:#fff;padding:10px 14px;border-radius:12px;font-size:13px;opacity:0;pointer-events:none;transition:.25s;z-index:200}.toast.show{opacity:1}
+    .quick-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.quick-actions a,.quick-actions button{border:0;border-radius:13px;padding:11px 8px;text-decoration:none;text-align:center;font-weight:900;background:#EAF4FF;color:var(--navy)}.timeline{border-left:3px solid #DCE8F6;margin:12px 0 0 8px;padding-left:16px}.timeline-entry{position:relative;padding:0 0 16px}.timeline-entry:before{content:"";position:absolute;left:-23px;top:4px;width:11px;height:11px;border-radius:50%;background:var(--sky);border:3px solid #fff}.timeline-entry b{display:block}.timeline-entry span{font-size:12px;color:var(--muted)}.birthday{border:1px solid #F1D7A7;background:#FFF9ED;border-radius:14px;padding:12px;margin-bottom:10px}.toast{position:fixed;left:50%;bottom:100px;transform:translateX(-50%);background:#14213A;color:#fff;padding:10px 14px;border-radius:12px;font-size:13px;opacity:0;pointer-events:none;transition:.25s;z-index:200}.toast.show{opacity:1}
     .hidden{display:none!important}.lock{position:fixed;inset:0;background:linear-gradient(150deg,var(--navy),var(--blue));z-index:300;display:flex;align-items:center;justify-content:center;padding:24px}.lock-card{width:min(420px,100%);background:#fff;border-radius:24px;padding:24px;text-align:center}.logo9{width:82px;height:82px;margin:auto;display:grid;grid-template-columns:repeat(3,1fr);gap:5px}.logo9 i{display:block;background:#E9F4FF;border-radius:8px}.logo9 i:nth-child(5){background:var(--sky)}
   </style>
 </head>
@@ -72,7 +72,7 @@
   <main class="content">
     <section id="home" class="screen active">
       <div class="section-head"><h2>今日重點</h2><span class="badge" id="todayLabel"></span></div>
-      <div class="card" id="todayTasks"></div>
+      <div class="card" id="todayTasks"></div><div class="title">近期生日</div><div class="card" id="birthdayList"></div>
       <div class="title">整體概況</div>
       <div class="grid2">
         <div class="metric"><b id="mCustomers">0</b><span>成交客戶</span></div>
@@ -174,13 +174,23 @@
   <button class="close" onclick="closeM('detailModal')">×</button><div id="detail"></div>
 </div></div>
 
+
+<div id="contactModal" class="modal"><div class="sheet">
+  <button class="close" onclick="closeM('contactModal')">×</button><h3>新增聯絡紀錄</h3>
+  <input id="logPersonId" type="hidden">
+  <label>日期</label><input id="logDate" type="date">
+  <label>聯絡方式</label><select id="logMethod"><option>LINE</option><option>電話</option><option>面談</option><option>視訊</option><option>Email</option><option>其他</option></select>
+  <label>內容</label><textarea id="logNote" placeholder="紀錄這次互動重點"></textarea>
+  <label>下一步</label><input id="logNext" placeholder="例如：下週約訪、補資料">
+  <button class="btn primary" style="margin-top:15px" onclick="saveContactLog()">儲存紀錄</button>
+</div></div>
 <div id="toast" class="toast"></div>
 
 <script>
 const categories=['親戚','同學','鄰居','當兵同袍','前同事','家人','另一半','社團'];
 const statuses=['尚未提及','客戶願意介紹','已取得聯絡方式','已加入LINE','已完成聊天','已約訪','完成需求分析','已提案','已成交','暫緩','拒絕','無法聯絡'];
 let taskFilter='all';
-let state=JSON.parse(localStorage.getItem('p9data')||'null')||{customers:[],people:[],selectedCustomerId:''};
+let state=JSON.parse(localStorage.getItem('p9data')||'null')||{customers:[],people:[],logs:[],selectedCustomerId:''}; if(!state.logs)state.logs=[];
 
 const $=id=>document.getElementById(id);
 const uid=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
@@ -219,6 +229,8 @@ function renderHome(){
   $('completionText').textContent=pct+'%';$('completionBar').style.width=pct+'%';
   const tasks=state.people.filter(p=>p.follow&&p.status!=='已成交').sort((a,b)=>a.follow.localeCompare(b.follow)).slice(0,4);
   $('todayTasks').innerHTML=tasks.length?tasks.map(p=>`<div class="task ${p.follow<today?'overdue':''}" onclick="openPersonDetail('${p.id}')"><b>${p.name}</b>｜${p.status}<div class="meta">${fmt(p.follow)}・${p.category}</div></div>`).join(''):'<div class="empty">目前沒有待追蹤事項</div>';
+  const now=new Date(),y=now.getFullYear(); const birthdays=state.customers.filter(c=>c.birthday).map(c=>{const md=c.birthday.slice(5);let next=new Date(`${y}-${md}T00:00:00`);if(next<new Date(today+'T00:00:00'))next=new Date(`${y+1}-${md}T00:00:00`);return {...c,days:Math.ceil((next-new Date(today+'T00:00:00'))/86400000)}}).filter(c=>c.days<=30).sort((a,b)=>a.days-b.days);
+  $('birthdayList').innerHTML=birthdays.length?birthdays.map(c=>`<div class="birthday" onclick="openCustomerDetail('${c.id}')"><b>${c.name}</b><div class="meta">${c.days===0?'今天生日':`${c.days} 天後生日`}・${c.birthday.slice(5).replace('-','/')}</div></div>`).join(''):'<div class="empty">30 天內沒有客戶生日</div>';
 }
 function renderCustomers(){
   const q=($('customerSearch').value||'').toLowerCase();
@@ -267,16 +279,11 @@ function saveCustomer(){
   state.selectedCustomerId=data.id;closeM('customerModal');persist();toast('客戶已儲存');
 }
 function openCustomerDetail(id){
-  const c=state.customers.find(x=>x.id===id),ps=state.people.filter(p=>p.customerId===id);
-  $('detail').innerHTML=`<h3>${c.name}</h3><p class="sub">${c.job||'未填職業'}${c.company?'・'+c.company:''}</p>
-  <div class="card" style="box-shadow:none;border:1px solid var(--line)"><b>客戶戰情室</b>
-  <div class="grid2" style="margin-top:12px"><div class="metric"><b>${ps.length}</b><span>介紹人脈</span></div><div class="metric"><b>${ps.filter(p=>p.status==='已成交').length}</b><span>人脈成交</span></div><div class="metric"><b>NT$${money(c.premium)}</b><span>年繳保費</span></div><div class="metric"><b>${fmt(c.birthday)}</b><span>生日</span></div></div></div>
-  <button class="btn primary" onclick="closeM('detailModal');state.selectedCustomerId='${c.id}';persist();navTo('grid')">查看九宮格</button>
-  <button class="btn ghost" style="margin-top:10px" onclick="closeM('detailModal');openCustomer('${c.id}')">編輯客戶</button>
-  <button class="btn danger" style="margin-top:10px" onclick="deleteCustomer('${c.id}')">刪除客戶</button>`;
-  openM('detailModal');
+  const c=state.customers.find(x=>x.id===id),ps=state.people.filter(p=>p.customerId===id),logs=state.logs.filter(l=>l.customerId===id).sort((a,b)=>b.date.localeCompare(a.date));
+  const call=c.phone?`<a href="tel:${c.phone}">撥電話</a>`:`<button onclick="toast('尚未填電話')">撥電話</button>`; const line=c.line?`<a href="https://line.me/R/ti/p/~${encodeURIComponent(c.line)}" target="_blank">開 LINE</a>`:`<button onclick="toast('尚未填 LINE ID')">開 LINE</button>`;
+  $('detail').innerHTML=`<h3>${c.name}</h3><p class="sub">${c.job||'未填職業'}${c.company?'・'+c.company:''}</p><div class="quick-actions">${call}${line}<button onclick="closeM('detailModal');openCustomer('${c.id}')">編輯</button></div><div class="card" style="box-shadow:none;border:1px solid var(--line)"><b>客戶戰情室</b><div class="grid2" style="margin-top:12px"><div class="metric"><b>${ps.length}</b><span>介紹人脈</span></div><div class="metric"><b>${ps.filter(p=>p.status==='已成交').length}</b><span>人脈成交</span></div><div class="metric"><b>NT$${money(c.premium)}</b><span>年繳保費</span></div><div class="metric"><b>${fmt(c.birthday)}</b><span>生日</span></div></div></div><div class="title">聯絡時間軸</div><div class="card" style="box-shadow:none;border:1px solid var(--line)">${logs.length?`<div class="timeline">${logs.map(l=>`<div class="timeline-entry"><b>${l.method}・${l.note||'無內容'}</b><span>${fmt(l.date)}${l.next?'・下一步：'+l.next:''}</span></div>`).join('')}</div>`:'<div class="empty">尚無聯絡紀錄</div>'}</div><button class="btn secondary" style="width:100%;margin-bottom:10px" onclick="closeM('detailModal');openContactLogForCustomer('${c.id}')">＋ 新增聯絡紀錄</button><button class="btn primary" onclick="closeM('detailModal');state.selectedCustomerId='${c.id}';persist();navTo('grid')">查看九宮格</button><button class="btn danger" style="margin-top:10px" onclick="deleteCustomer('${c.id}')">刪除客戶</button>`; openM('detailModal');
 }
-function deleteCustomer(id){if(!confirm('會一併刪除此客戶底下的人脈，確定嗎？'))return;state.customers=state.customers.filter(x=>x.id!==id);state.people=state.people.filter(x=>x.customerId!==id);closeM('detailModal');persist()}
+function deleteCustomer(id){if(!confirm('會一併刪除此客戶底下的人脈，確定嗎？'))return;state.customers=state.customers.filter(x=>x.id!==id);state.people=state.people.filter(x=>x.customerId!==id);state.logs=state.logs.filter(x=>x.customerId!==id);closeM('detailModal');persist()}
 
 function clearPersonForm(){['pId','pName','pRelation','pPhone','pLine','pJob','pCompany','pFollow','pNote'].forEach(id=>$(id).value='')}
 function openPerson(cat='',id=''){if(!state.customers.length)return toast('請先新增成交客戶');clearPersonForm();fillSelects();$('personModalTitle').textContent=id?'編輯人脈':'新增人脈';$('pCustomer').value=state.selectedCustomerId||state.customers[0].id;if(cat)$('pCategory').value=cat;
@@ -296,14 +303,16 @@ function openCategory(cat){
   openM('detailModal');
 }
 function openPersonDetail(id){
-  const p=state.people.find(x=>x.id===id),c=state.customers.find(x=>x.id===p.customerId);
-  $('detail').innerHTML=`<h3>${p.name}</h3><p class="sub">來源：${c?.name||''}・${p.category}${p.relation?'・'+p.relation:''}</p>
-  <div class="card" style="box-shadow:none;border:1px solid var(--line)"><div class="item"><span>目前進度</span><b>${p.status}</b></div><div class="item"><span>下次追蹤</span><b>${fmt(p.follow)}</b></div><div class="item"><span>人生事件</span><b>${p.event}</b></div><div class="item"><span>電話</span><b>${p.phone||'未填'}</b></div><div class="item"><span>LINE</span><b>${p.line||'未填'}</b></div></div>
-  <button class="btn primary" onclick="closeM('detailModal');openPerson('','${p.id}')">編輯人脈</button><button class="btn danger" style="margin-top:10px" onclick="deletePerson('${p.id}')">刪除此人脈</button>`;
-  openM('detailModal');
+  const p=state.people.find(x=>x.id===id),c=state.customers.find(x=>x.id===p.customerId),logs=state.logs.filter(l=>l.personId===id).sort((a,b)=>b.date.localeCompare(a.date));
+  const call=p.phone?`<a href="tel:${p.phone}">撥電話</a>`:`<button onclick="toast('尚未填電話')">撥電話</button>`; const line=p.line?`<a href="https://line.me/R/ti/p/~${encodeURIComponent(p.line)}" target="_blank">開 LINE</a>`:`<button onclick="toast('尚未填 LINE ID')">開 LINE</button>`;
+  $('detail').innerHTML=`<h3>${p.name}</h3><p class="sub">來源：${c?.name||''}・${p.category}${p.relation?'・'+p.relation:''}</p><div class="quick-actions">${call}${line}<button onclick="closeM('detailModal');openPerson('','${p.id}')">編輯</button></div><div class="card" style="box-shadow:none;border:1px solid var(--line)"><div class="item"><span>目前進度</span><b>${p.status}</b></div><div class="item"><span>下次追蹤</span><b>${fmt(p.follow)}</b></div><div class="item"><span>人生事件</span><b>${p.event}</b></div></div><div class="title">聯絡時間軸</div><div class="card" style="box-shadow:none;border:1px solid var(--line)">${logs.length?`<div class="timeline">${logs.map(l=>`<div class="timeline-entry"><b>${l.method}・${l.note||'無內容'}</b><span>${fmt(l.date)}${l.next?'・下一步：'+l.next:''}</span></div>`).join('')}</div>`:'<div class="empty">尚無聯絡紀錄</div>'}</div><button class="btn secondary" style="width:100%;margin-bottom:10px" onclick="closeM('detailModal');openContactLog('${p.id}')">＋ 新增聯絡紀錄</button><button class="btn danger" onclick="deletePerson('${p.id}')">刪除此人脈</button>`; openM('detailModal');
 }
-function deletePerson(id){if(!confirm('確定刪除此人脈？'))return;state.people=state.people.filter(x=>x.id!==id);closeM('detailModal');persist()}
+function deletePerson(id){if(!confirm('確定刪除此人脈？'))return;state.people=state.people.filter(x=>x.id!==id);state.logs=state.logs.filter(x=>x.personId!==id);closeM('detailModal');persist()}
 
+let pendingCustomerLogId='';
+function openContactLog(personId){pendingCustomerLogId='';$('logPersonId').value=personId;$('logDate').value=isoToday();$('logMethod').value='LINE';$('logNote').value='';$('logNext').value='';openM('contactModal')}
+function openContactLogForCustomer(customerId){pendingCustomerLogId=customerId;$('logPersonId').value='';$('logDate').value=isoToday();$('logMethod').value='LINE';$('logNote').value='';$('logNext').value='';openM('contactModal')}
+function saveContactLog(){const personId=$('logPersonId').value,p=personId?state.people.find(x=>x.id===personId):null;state.logs.push({id:uid('l'),personId:personId||'',customerId:pendingCustomerLogId||(p?.customerId||''),date:$('logDate').value||isoToday(),method:$('logMethod').value,note:$('logNote').value.trim(),next:$('logNext').value.trim()});closeM('contactModal');persist();toast('聯絡紀錄已儲存')}
 function exportData(){
   const blob=new Blob([JSON.stringify({version:1,exportedAt:new Date().toISOString(),data:state},null,2)],{type:'application/json'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='project9grid-backup-'+isoToday()+'.json';a.click();URL.revokeObjectURL(a.href);
@@ -311,7 +320,7 @@ function exportData(){
 function importData(e){
   const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const x=JSON.parse(r.result);state=x.data||x;if(!state.customers||!state.people)throw 0;persist();toast('備份已匯入')}catch{toast('檔案格式不正確')}};r.readAsText(f);
 }
-function resetAll(){if(!confirm('確定清除所有客戶與人脈資料？'))return;state={customers:[],people:[],selectedCustomerId:''};persist();toast('資料已清除')}
+function resetAll(){if(!confirm('確定清除所有客戶與人脈資料？'))return;state={customers:[],people:[],logs:[],selectedCustomerId:''};persist();toast('資料已清除')}
 
 renderAll();
 if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js'));

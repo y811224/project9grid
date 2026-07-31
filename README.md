@@ -1,3 +1,3 @@
-# Project 9Grid v1
+# Project 9Grid v1.1
 
-手機版九宮格客戶開發系統。部署至 Vercel 後即可用 Safari 開啟並加入主畫面。
+新增一鍵撥電話、開啟 LINE、30 天生日提醒、聯絡紀錄時間軸。
