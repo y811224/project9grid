@@ -17,12 +17,12 @@
       --shadow:0 10px 28px rgba(15,47,90,.09);--r:18px;
     }
     *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-    html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Microsoft JhengHei",sans-serif}
+    html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Microsoft JhengHei",sans-serif}
     button,input,select,textarea{font:inherit}
-    .app{max-width:520px;margin:auto;min-height:100vh;padding-bottom:92px}
-    .top{position:sticky;top:0;z-index:20;background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff;padding:18px 18px 16px;border-radius:0 0 26px 26px}
+    .app{max-width:520px;margin:auto;height:100dvh;min-height:100vh;display:flex;flex-direction:column;overflow:hidden;padding-bottom:0}
+    .top{position:relative;flex:0 0 auto;z-index:20;background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff;padding:18px 18px 16px;border-radius:0 0 26px 26px}
     .top small{opacity:.82;letter-spacing:.08em}.top h1{margin:4px 0 0;font-size:24px}.top p{margin:5px 0 0;font-size:13px;opacity:.88}
-    .content{padding:16px;min-height:calc(100vh - 170px)}.screen{display:none}.screen.active{display:block;min-height:1px;contain:layout paint}
+    .content{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;padding:16px 16px 24px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;scroll-behavior:auto}.screen{display:none}.screen.active{display:block;min-height:1px}
     .card{background:var(--card);border-radius:var(--r);padding:16px;margin-bottom:14px;box-shadow:var(--shadow)}
     .title{font-size:18px;font-weight:900;margin:6px 0 12px}.sub{font-size:13px;color:var(--muted)}
     .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.metric{background:#F8FAFD;border:1px solid var(--line);border-radius:16px;padding:14px}
@@ -32,14 +32,14 @@
     .list{background:#fff;border-radius:var(--r);padding:0 16px;box-shadow:var(--shadow)}.item{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid var(--line);cursor:pointer}.item:last-child{border-bottom:0}.name{font-weight:900}.meta{font-size:12px;color:var(--muted);margin-top:4px}.badge{font-size:12px;font-weight:800;padding:5px 9px;border-radius:999px;background:#EAF3FF;color:var(--navy);white-space:nowrap}
     .grid9{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.cell{min-height:110px;border:1px solid var(--line);background:#fff;border-radius:16px;padding:10px;text-align:left;position:relative}.cell.center{background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff;border:0}.cell b{display:block}.cell strong{font-size:27px;display:block;margin-top:10px}.cell small{position:absolute;bottom:9px;left:10px;color:var(--muted);font-size:11px}.cell.center small{color:#dcecff}
     label{display:block;font-size:13px;font-weight:800;margin:12px 0 6px}input,select,textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff;color:var(--text)}textarea{min-height:88px}
-    .nav{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:min(520px,100%);background:#fff;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);padding:7px 8px calc(8px + env(safe-area-inset-bottom));z-index:30}.nav button{border:0;background:transparent;color:var(--muted);padding:7px 2px;font-size:11px}.nav button.active{color:var(--navy);font-weight:900}
+    .nav{position:relative;flex:0 0 auto;width:100%;background:#fff;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);padding:7px 8px calc(8px + env(safe-area-inset-bottom));z-index:30}.nav button{border:0;background:transparent;color:var(--muted);padding:7px 2px;font-size:11px}.nav button.active{color:var(--navy);font-weight:900}
     .modal{position:fixed;inset:0;background:rgba(13,25,45,.45);z-index:100;display:none;align-items:flex-end;justify-content:center;overscroll-behavior:none}
     .modal.show{display:flex}
     .sheet{width:min(520px,100%);height:min(92dvh,92vh);overflow-y:auto;overflow-x:hidden;background:#fff;border-radius:26px 26px 0 0;padding:0 18px calc(32px + env(safe-area-inset-bottom));overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scroll-padding-top:82px}
     .sheet-head{position:sticky;top:0;z-index:15;display:flex;align-items:center;justify-content:space-between;min-height:68px;margin:0 -18px 12px;padding:calc(12px + env(safe-area-inset-top)) 18px 10px;background:rgba(255,255,255,.97);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
     .sheet-head h3{margin:0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:12px}
     .close{flex:0 0 38px;border:0;background:#EEF2F7;width:38px;height:38px;border-radius:50%;font-size:22px;line-height:1}
-    body.modal-open{overflow:hidden;position:fixed;width:100%}
+    body.modal-open{overflow:hidden}
     .task{border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:10px}.task.overdue{border-color:#F3C4C4;background:#FFF8F8}
     .progress{height:9px;background:#E8EDF4;border-radius:99px;overflow:hidden}.progress>div{height:100%;background:var(--sky)}
     .pillbar{display:flex;gap:8px;overflow:auto;padding-bottom:4px}.pill{border:1px solid var(--line);background:#fff;padding:8px 11px;border-radius:999px;white-space:nowrap}.pill.active{background:var(--navy);color:#fff;border-color:var(--navy)}
@@ -206,25 +206,21 @@ const money=n=>Number(n||0).toLocaleString('zh-TW');
 
 function toast(t){$('toast').textContent=t;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),1800)}
 function persist(){localStorage.setItem('p9data',JSON.stringify(state));renderAll()}
-let pageScrollY=0;
+let contentScrollY=0;
 function openM(id){
-  pageScrollY=window.scrollY;
+  const content=document.querySelector('.content');
+  contentScrollY=content ? content.scrollTop : 0;
   $(id).classList.add('show');
   document.body.classList.add('modal-open');
-  document.body.style.top=`-${pageScrollY}px`;
   const sheet=$(id).querySelector('.sheet');
   if(sheet)sheet.scrollTop=0;
 }
 function closeM(id){
   $(id).classList.remove('show');
   if(!document.querySelector('.modal.show')){
-    const restoreY=pageScrollY;
     document.body.classList.remove('modal-open');
-    document.body.style.top='';
-    requestAnimationFrame(()=>{
-      window.scrollTo({top:restoreY,left:0,behavior:'auto'});
-      requestAnimationFrame(()=>window.dispatchEvent(new Event('resize')));
-    });
+    const content=document.querySelector('.content');
+    if(content)requestAnimationFrame(()=>content.scrollTop=contentScrollY);
   }
 }
 window.addEventListener('click',e=>{if(e.target.classList.contains('modal'))closeM(e.target.id)});
@@ -243,9 +239,12 @@ function navTo(id){
   document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.screen===id));
   const t={home:['首頁戰情室','成交客戶 → 轉介紹 → 新成交'],customers:['成交客戶','管理客戶與九宮格中心'],grid:['人脈九宮格','八大關係來源'],tasks:['待辦追蹤','今天該聯絡誰'],stats:['統計與備份','掌握開發進度']};
   $('headTitle').textContent=t[id][0];$('headSub').textContent=t[id][1];
-  document.body.style.top='';
   document.body.classList.remove('modal-open');
-  requestAnimationFrame(()=>window.scrollTo({top:0,left:0,behavior:'auto'}));
+  const content=document.querySelector('.content');
+  if(content){
+    content.scrollTop=0;
+    requestAnimationFrame(()=>content.scrollTop=0);
+  }
 }
 
 function renderAll(){renderHome();renderCustomers();renderGrid();renderTasks();renderStats();fillSelects()}
@@ -354,8 +353,8 @@ function resetAll(){if(!confirm('確定清除所有客戶與人脈資料？'))re
 renderAll();
 window.addEventListener('pageshow',()=>{
   document.body.classList.remove('modal-open');
-  document.body.style.top='';
-  requestAnimationFrame(()=>window.dispatchEvent(new Event('resize')));
+  const content=document.querySelector('.content');
+  if(content)content.scrollTop=0;
 });
 if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js'));
 </script>
