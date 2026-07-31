@@ -33,7 +33,13 @@
     .grid9{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.cell{min-height:110px;border:1px solid var(--line);background:#fff;border-radius:16px;padding:10px;text-align:left;position:relative}.cell.center{background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff;border:0}.cell b{display:block}.cell strong{font-size:27px;display:block;margin-top:10px}.cell small{position:absolute;bottom:9px;left:10px;color:var(--muted);font-size:11px}.cell.center small{color:#dcecff}
     label{display:block;font-size:13px;font-weight:800;margin:12px 0 6px}input,select,textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff;color:var(--text)}textarea{min-height:88px}
     .nav{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:min(520px,100%);background:#fff;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);padding:7px 8px calc(8px + env(safe-area-inset-bottom));z-index:30}.nav button{border:0;background:transparent;color:var(--muted);padding:7px 2px;font-size:11px}.nav button.active{color:var(--navy);font-weight:900}
-    .modal{position:fixed;inset:0;background:rgba(13,25,45,.45);z-index:100;display:none;align-items:flex-end;justify-content:center}.modal.show{display:flex}.sheet{width:min(520px,100%);max-height:92vh;overflow:auto;background:#fff;border-radius:26px 26px 0 0;padding:18px}.close{float:right;border:0;background:#EEF2F7;width:34px;height:34px;border-radius:50%;font-size:20px}
+    .modal{position:fixed;inset:0;background:rgba(13,25,45,.45);z-index:100;display:none;align-items:flex-end;justify-content:center;overscroll-behavior:none}
+    .modal.show{display:flex}
+    .sheet{width:min(520px,100%);height:min(92dvh,92vh);overflow-y:auto;overflow-x:hidden;background:#fff;border-radius:26px 26px 0 0;padding:0 18px calc(32px + env(safe-area-inset-bottom));overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scroll-padding-top:82px}
+    .sheet-head{position:sticky;top:0;z-index:15;display:flex;align-items:center;justify-content:space-between;min-height:68px;margin:0 -18px 12px;padding:calc(12px + env(safe-area-inset-top)) 18px 10px;background:rgba(255,255,255,.97);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
+    .sheet-head h3{margin:0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:12px}
+    .close{flex:0 0 38px;border:0;background:#EEF2F7;width:38px;height:38px;border-radius:50%;font-size:22px;line-height:1}
+    body.modal-open{overflow:hidden;position:fixed;width:100%}
     .task{border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:10px}.task.overdue{border-color:#F3C4C4;background:#FFF8F8}
     .progress{height:9px;background:#E8EDF4;border-radius:99px;overflow:hidden}.progress>div{height:100%;background:var(--sky)}
     .pillbar{display:flex;gap:8px;overflow:auto;padding-bottom:4px}.pill{border:1px solid var(--line);background:#fff;padding:8px 11px;border-radius:999px;white-space:nowrap}.pill.active{background:var(--navy);color:#fff;border-color:var(--navy)}
@@ -136,7 +142,7 @@
 </div>
 
 <div id="customerModal" class="modal"><div class="sheet">
-  <button class="close" onclick="closeM('customerModal')">×</button><h3 id="customerModalTitle">新增成交客戶</h3>
+  <div class="sheet-head"><h3 id="customerModalTitle">新增成交客戶</h3><button class="close" onclick="closeM('customerModal')" aria-label="關閉">×</button></div>
   <input id="cId" type="hidden">
   <label>姓名 *</label><input id="cName">
   <label>手機</label><input id="cPhone" inputmode="tel">
@@ -153,7 +159,7 @@
 </div></div>
 
 <div id="personModal" class="modal"><div class="sheet">
-  <button class="close" onclick="closeM('personModal')">×</button><h3 id="personModalTitle">新增人脈</h3>
+  <div class="sheet-head"><h3 id="personModalTitle">新增人脈</h3><button class="close" onclick="closeM('personModal')" aria-label="關閉">×</button></div>
   <input id="pId" type="hidden">
   <label>所屬成交客戶</label><select id="pCustomer"></select>
   <label>姓名 *</label><input id="pName">
@@ -171,12 +177,12 @@
 </div></div>
 
 <div id="detailModal" class="modal"><div class="sheet">
-  <button class="close" onclick="closeM('detailModal')">×</button><div id="detail"></div>
+  <div class="sheet-head"><h3>詳細資料</h3><button class="close" onclick="closeM('detailModal')" aria-label="關閉">×</button></div><div id="detail"></div>
 </div></div>
 
 
 <div id="contactModal" class="modal"><div class="sheet">
-  <button class="close" onclick="closeM('contactModal')">×</button><h3>新增聯絡紀錄</h3>
+  <div class="sheet-head"><h3>新增聯絡紀錄</h3><button class="close" onclick="closeM('contactModal')" aria-label="關閉">×</button></div>
   <input id="logPersonId" type="hidden">
   <label>日期</label><input id="logDate" type="date">
   <label>聯絡方式</label><select id="logMethod"><option>LINE</option><option>電話</option><option>面談</option><option>視訊</option><option>Email</option><option>其他</option></select>
@@ -200,8 +206,24 @@ const money=n=>Number(n||0).toLocaleString('zh-TW');
 
 function toast(t){$('toast').textContent=t;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),1800)}
 function persist(){localStorage.setItem('p9data',JSON.stringify(state));renderAll()}
-function openM(id){$(id).classList.add('show')} function closeM(id){$(id).classList.remove('show')}
-window.addEventListener('click',e=>{if(e.target.classList.contains('modal'))e.target.classList.remove('show')});
+let pageScrollY=0;
+function openM(id){
+  pageScrollY=window.scrollY;
+  $(id).classList.add('show');
+  document.body.classList.add('modal-open');
+  document.body.style.top=`-${pageScrollY}px`;
+  const sheet=$(id).querySelector('.sheet');
+  if(sheet)sheet.scrollTop=0;
+}
+function closeM(id){
+  $(id).classList.remove('show');
+  if(!document.querySelector('.modal.show')){
+    document.body.classList.remove('modal-open');
+    document.body.style.top='';
+    window.scrollTo(0,pageScrollY);
+  }
+}
+window.addEventListener('click',e=>{if(e.target.classList.contains('modal'))closeM(e.target.id)});
 
 function setupLock(){
   const pin=localStorage.getItem('p9pin');
