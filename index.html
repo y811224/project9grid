@@ -45,7 +45,7 @@
     .pillbar{display:flex;gap:8px;overflow:auto;padding-bottom:4px}.pill{border:1px solid var(--line);background:#fff;padding:8px 11px;border-radius:999px;white-space:nowrap}.pill.active{background:var(--navy);color:#fff;border-color:var(--navy)}
     .empty{text-align:center;color:var(--muted);padding:26px 8px}.section-head{display:flex;align-items:center;justify-content:space-between;margin:6px 0 12px}.section-head h2{font-size:18px;margin:0}
     .quick-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.quick-actions a,.quick-actions button{border:0;border-radius:13px;padding:11px 8px;text-decoration:none;text-align:center;font-weight:900;background:#EAF4FF;color:var(--navy)}.timeline{border-left:3px solid #DCE8F6;margin:12px 0 0 8px;padding-left:16px}.timeline-entry{position:relative;padding:0 0 16px}.timeline-entry:before{content:"";position:absolute;left:-23px;top:4px;width:11px;height:11px;border-radius:50%;background:var(--sky);border:3px solid #fff}.timeline-entry b{display:block}.timeline-entry span{font-size:12px;color:var(--muted)}.birthday{border:1px solid #F1D7A7;background:#FFF9ED;border-radius:14px;padding:12px;margin-bottom:10px}.toast{position:fixed;left:50%;bottom:100px;transform:translateX(-50%);background:#14213A;color:#fff;padding:10px 14px;border-radius:12px;font-size:13px;opacity:0;pointer-events:none;transition:.25s;z-index:200}.toast.show{opacity:1}
-    .hidden{display:none!important}.lock{position:fixed;inset:0;background:linear-gradient(150deg,var(--navy),var(--blue));z-index:300;display:flex;align-items:center;justify-content:center;padding:24px}.lock-card{width:min(420px,100%);background:#fff;border-radius:24px;padding:24px;text-align:center}.logo9{width:82px;height:82px;margin:auto;display:grid;grid-template-columns:repeat(3,1fr);gap:5px}.logo9 i{display:block;background:#E9F4FF;border-radius:8px}.logo9 i:nth-child(5){background:var(--sky)}
+    .hidden{display:none!important}.lock{position:fixed;inset:0;width:100%;height:100dvh;background:linear-gradient(150deg,var(--navy),var(--blue));z-index:300;display:flex;align-items:center;justify-content:center;padding:24px;overflow:auto;-webkit-overflow-scrolling:touch}.lock-card{width:min(420px,100%);background:#fff;border-radius:24px;padding:24px;text-align:center}.logo9{width:82px;height:82px;margin:auto;display:grid;grid-template-columns:repeat(3,1fr);gap:5px}.logo9 i{display:block;background:#E9F4FF;border-radius:8px}.logo9 i:nth-child(5){background:var(--sky)}
   </style>
 </head>
 <body>
@@ -205,6 +205,17 @@ const fmt=d=>d?d.replaceAll('-','/'):'未設定';
 const money=n=>Number(n||0).toLocaleString('zh-TW');
 
 function toast(t){$('toast').textContent=t;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),1800)}
+function resetPageTop(){
+  document.documentElement.scrollTop=0;
+  document.body.scrollTop=0;
+  window.scrollTo(0,0);
+  requestAnimationFrame(()=>{
+    document.documentElement.scrollTop=0;
+    document.body.scrollTop=0;
+    window.scrollTo(0,0);
+    setTimeout(()=>window.scrollTo(0,0),80);
+  });
+}
 function persist(){localStorage.setItem('p9data',JSON.stringify(state));renderAll()}
 let pageScrollY=0;
 function openM(id){
@@ -227,8 +238,8 @@ function setupLock(){
   const pin=localStorage.getItem('p9pin');
   $('setupPin').classList.toggle('hidden',!!pin);$('loginPin').classList.toggle('hidden',!pin);
 }
-function setPin(){const v=$('pin1').value.trim();if(!/^\d{4}$/.test(v))return toast('請輸入 4 位數字');localStorage.setItem('p9pin',v);$('lock').classList.add('hidden');}
-function login(){if($('pin2').value===localStorage.getItem('p9pin')){$('lock').classList.add('hidden')}else toast('密碼錯誤')}
+function setPin(){const v=$('pin1').value.trim();if(!/^\d{4}$/.test(v))return toast('請輸入 4 位數字');localStorage.setItem('p9pin',v);$('lock').classList.add('hidden');resetPageTop();}
+function login(){if($('pin2').value===localStorage.getItem('p9pin')){$('lock').classList.add('hidden');resetPageTop()}else toast('密碼錯誤')}
 setupLock();
 
 document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>navTo(b.dataset.screen));
@@ -238,11 +249,7 @@ function navTo(id){
   const t={home:['首頁戰情室','成交客戶 → 轉介紹 → 新成交'],customers:['成交客戶','管理客戶與九宮格中心'],grid:['人脈九宮格','八大關係來源'],tasks:['待辦追蹤','今天該聯絡誰'],stats:['統計與備份','掌握開發進度']};
   $('headTitle').textContent=t[id][0];$('headSub').textContent=t[id][1];
   document.body.classList.remove('modal-open');
-  window.scrollTo(0,0);
-  requestAnimationFrame(()=>{
-    window.scrollTo(0,0);
-    setTimeout(()=>window.scrollTo(0,0),40);
-  });
+  resetPageTop();
 }
 
 function renderAll(){renderHome();renderCustomers();renderGrid();renderTasks();renderStats();fillSelects()}
@@ -352,8 +359,10 @@ renderAll();
 window.addEventListener('pageshow',()=>{
   document.body.classList.remove('modal-open');
   document.body.style.top='';
-  requestAnimationFrame(()=>window.scrollTo(0,0));
+  resetPageTop();
 });
+window.addEventListener('load',resetPageTop);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)resetPageTop()});
 if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js'));
 </script>
 </body>
